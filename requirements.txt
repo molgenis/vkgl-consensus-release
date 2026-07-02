@@ -1,0 +1,3 @@
+aiohttp
+molgenis-emx2-pyclient
+python-decouple
