@@ -1,0 +1,6 @@
+*urate*export*.csv
+vkgl_export_erasmusmc*.tsv
+*_export_variants_for_VKGL.*.txt.gz
+managed_variants_NKI*.tsv
+*01_SNV*.txt.gz
+vkgl_export_umcutrecht*.tsv
