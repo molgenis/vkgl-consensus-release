@@ -46,6 +46,8 @@ class ReleasePipeline:
 
         for lab in self.config.labs:
             lab_name = self.config.labs[lab]["name"]
+            self.report.default_summary(lab_name=lab_name)
+            self.report.update_summary(lab_name, {"prev_release": self.config.previous})
             self.printer.print_header(
                 f"⚙️ Preprocess {lab_name} data, "
                 f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
@@ -53,7 +55,7 @@ class ReleasePipeline:
             self.processing_feedback.clear()
             self.prepare_data(lab)
 
-            if not self.report.has_category_errors(lab_name):
+            if not self.report.has_lab_errors(lab_name):
                 try:
                     await LabPublisher(
                         self.config, self.processing_feedback
@@ -72,11 +74,11 @@ class ReleasePipeline:
                     ReleaseError(f"Preprocessed {lab_name} data won't be published"),
                 )
 
-            if not self.report.has_category_errors(lab_name):
+            if not self.report.has_lab_errors(lab_name):
                 self.processing_feedback.clear()
                 await self.normalise_lab_data(lab)
 
-            if not self.report.has_category_errors(lab_name):
+            if not self.report.has_lab_errors(lab_name):
                 try:
                     await NormalisedPublisher(
                         self.config, self.processing_feedback
@@ -109,7 +111,7 @@ class ReleasePipeline:
             self.report.add_error(
                 "publishing", ReleaseError("Consensus data won't be published")
             )
-            self.printer.print_summary(self.report)
+            self.printer.print_release_summary(self.report)
             raise ValueError("Preprocessing the data of one or more labs failed")
 
         if not self.report.has_errors():
@@ -127,7 +129,7 @@ class ReleasePipeline:
             self.report.add_error(
                 "publishing", ReleaseError("Consensus won't be published")
             )
-            self.printer.print_summary(self.report)
+            self.printer.print_release_summary(self.report)
             raise ValueError("Creating the consensus failed")
 
         if not self.report.has_errors():
@@ -144,7 +146,7 @@ class ReleasePipeline:
             self.report.add_error(
                 "publishing", ReleaseError("Public consensus info won't be published")
             )
-            self.printer.print_summary(self.report)
+            self.printer.print_release_summary(self.report)
             raise ValueError("Creating the consensus failed")
 
         if not self.report.has_errors():
@@ -163,10 +165,10 @@ class ReleasePipeline:
             self.report.add_error(
                 "publishing", ReleaseError("Public Information won't be published")
             )
-            self.printer.print_summary(self.report)
+            self.printer.print_release_summary(self.report)
             raise ValueError("Creating the Public Information failed")
 
-        self.printer.print_summary(self.report)
+        self.printer.print_release_summary(self.report)
         if self.report.has_errors():
             raise ValueError("One of the steps in the VKGL release pipeline failed")
 
@@ -177,9 +179,11 @@ class ReleasePipeline:
         warnings = []
         lab_name = self.config.labs[lab]["name"]
         data_preparer = DataPreparer(
-            self.config, lab, warnings, self.processing_feedback
+            self.config, lab, self.processing_feedback, self.report, warnings
         )
-        validator = Validator(lab, self.config, warnings, self.processing_feedback)
+        validator = Validator(
+            lab, self.config, self.processing_feedback, self.report, warnings
+        )
         try:
             self.print(f"📥 Retrieve {lab_name} raw data")
             if not self.config.slurm:
@@ -203,7 +207,12 @@ class ReleasePipeline:
             output = f"{self.config.processed_folder}/{lab}"
             self.print(f"⚖️ Compare new {lab_name} lab data with the previous release")
             compare = FileComparing(
-                lab, f"{self.config.cleaned_folder}/{lab}", warnings, output
+                lab,
+                lab_name,
+                f"{self.config.cleaned_folder}/{lab}",
+                self.report,
+                warnings,
+                output,
             )
             compare.compare_files()
 
@@ -224,7 +233,9 @@ class ReleasePipeline:
         self.printer.print(f"🅥🅥 Normalise new {self.config.labs[lab]['name']} variants")
         try:
             warnings = []
-            validator = Validator(lab, self.config, warnings, self.processing_feedback)
+            validator = Validator(
+                lab, self.config, self.processing_feedback, self.report, warnings
+            )
             input_file = f"{self.config.processed_folder}/{lab}/new_variants.tsv"
             with open(input_file, newline="") as infile:
                 reader = csv.DictReader(infile, delimiter="\t")

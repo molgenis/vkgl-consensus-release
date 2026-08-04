@@ -1,3 +1,4 @@
+import string
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import DefaultDict, List, Optional
@@ -30,30 +31,33 @@ class ReleaseReport:
     Summary object. Stores errors and warnings that occur during processing.
     """
 
-    categories: List[str]
+    labs: List[str]
 
     errors: DefaultDict[str, ReleaseError] = field(
         default_factory=lambda: defaultdict(list)
     )
+
+    summary: DefaultDict[str, str] = field(default_factory=lambda: defaultdict(str))
+
     warnings: DefaultDict[str, List[ReleaseWarning]] = field(
         default_factory=lambda: defaultdict(list)
     )
 
     error: Optional[ReleaseError] = None
 
-    def add_error(self, category: str, error: ReleaseError):
-        self.errors[category] = error
+    def add_error(self, lab: str, error: ReleaseError):
+        self.errors[lab] = error
 
-    def add_warnings(self, category: str, warnings: List[ReleaseWarning]):
+    def add_warnings(self, lab: str, warnings: List[ReleaseWarning]):
         if warnings:
-            self.warnings[category].extend(warnings)
+            self.warnings[lab].extend(warnings)
 
     def set_global_error(self, error: ReleaseError):
         self.error = error
 
-    def has_category_errors(self, category) -> bool:
+    def has_lab_errors(self, lab) -> bool:
         return self.error is not None or (
-            category in self.errors and self.errors[category] is not None
+            lab in self.errors and self.errors[lab] is not None
         )
 
     def has_errors(self) -> bool:
@@ -61,6 +65,15 @@ class ReleaseReport:
 
     def has_warnings(self) -> bool:
         return len(self.warnings) > 0
+
+    def default_summary(self, lab_name: str):
+        with open("SummaryTemplate.md", "r") as default:
+            self.summary[lab_name] = default.read()
+            self.update_summary(lab_name, {"Lab": lab_name})
+
+    def update_summary(self, lab: str, data: dict):
+        summary = string.Template(self.summary[lab])
+        self.summary[lab] = summary.safe_substitute(**data)
 
 
 class MolgenisRequestError(Exception):

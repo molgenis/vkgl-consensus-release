@@ -16,29 +16,30 @@ For the development of the VKGL data release process, please check [Development]
 2. Check if the Labs, and related reference tables are still up-to-date
 3. Get an empty server from the server list and set DNS to vkgl-release.molgenis.net
    - Set dtap to acc and include that this server will be used for the VKGL Consensus release in the description
-   - Use the server list information of https://vkgl-molgeniscloud.org to fill in the other fields
+   - Use the server list information of https://vkgl.molgeniscloud.org to fill in the other fields
 4. Link DNS to the chosen server (or ask somebody with these privileges).
 5. Update the server to the latest MOLGENIS version
 6. Do a cross-restore from https://vkgl.molgeniscloud.org/ to https://vkgl-release.molgenis.net
 7. After the restore, change the password on the release server back to the one in the Vault
-8. Make sure you have a correctly configured key [ssh key forwarding](https://docs.gcc.rug.nl/nibbler/dedicated-dt-server-cluster-users/#configure-ssh-agent-forwarding).
-9. Ssh with SSH agent forwarding enabled to Nibbler (use `-A` argument)
-10. Go to `/groups/umcg-gcc/tmp02/projects/vkgl` and create a directory for this release (yyyyMM).
-11. Get the latest version of the VKGL release pipeline:
+8. Temporarily set the isOidcEnabled setting to false
+9. Make sure you have a correctly configured key [ssh key forwarding](https://docs.gcc.rug.nl/nibbler/dedicated-dt-server-cluster-users/#configure-ssh-agent-forwarding).
+10. Ssh with SSH agent forwarding enabled to Nibbler (use `-A` argument)
+11. Go to `/groups/umcg-gcc/tmp02/projects/vkgl` and create a directory for this release (yyyyMM).
+12. Get the latest version of the VKGL release pipeline:
     ```shell
     git clone https://github.com/molgenis/vkgl-consensus-release.git
     ```
-12. Go to `vkgl-consensus-release`:
+13. Go to `vkgl-consensus-release`:
     ```shell
     cd vkgl-consensus-release
     ```
-13. Check `rawLabFiles.txt` if the file names of the lab files correspond to the ones on nibbler-transfer
-14. Fill in the right serverURL and credentials in `credentials.txt`. In case the pipeline runs as
+14. Check `rawLabFiles.txt` if the file names of the lab files correspond to the ones on nibbler-transfer
+15. Fill in the right serverURL and credentials in `credentials.txt`. In case the pipeline runs as
     Slurm job, put the Slurm parameter to True.
-15. Check if due to for example new file lay-out or a new lab-system a rerun from scratch for a certain
+16. Check if due to for example new file lay-out or a new lab-system a rerun from scratch for a certain
     lab needs to be done.
-16. Is so, first go to [release from scratch](#release-one-or-more-labs-from-scratch) otherwise
-17. Otherwise, go straight to [VKGL Consensus release](#process-lab-data-normalise-and-create-consensus)
+17. If so, first go to [release from scratch](#release-one-or-more-labs-from-scratch) otherwise
+18. Otherwise, go straight to [VKGL Consensus release](#process-lab-data-normalise-and-create-consensus)
 
 ## Release one or more labs from scratch
 1. Setup and install the VKGL release pipeline:
@@ -87,17 +88,17 @@ For the development of the VKGL data release process, please check [Development]
 
 4. Check `labDataRetrieval.out` if all data is successfully downloaded. Is so, the release can start!
 
-5. In case of processing data for only one lab. Add this piece of Python code
-    to `release_pipeline.py` after `for lab in self.config.labs:`
+5. In case of processing data for only one or a few labs, add this piece of Python code
+    to `release_pipeline.py` after `for lab in self.config.labs:`:
    ```code
-    if lab != "nki":
+    if lab in ["aumc", "nki"]:
        continue
    ```
 
 6. If running locally start `release_pipeline.py`. Otherwise
 7. Start the `vkgl-consensus-release.sh` Slurm job with parameter release (yyyyMM).
    Before starting the script check if the work allocation time (walltime) is large enough.
-   Default is one day, but for a full run from scratch about six days are necessary
+   Default is one day, but for a full run from scratch about ten days are necessary
     ```shell
     sbatch vkgl-consensus-release.sh yyyyMM
     ```
@@ -106,9 +107,11 @@ For the development of the VKGL data release process, please check [Development]
 
 ## Post-processing
 1. Check if everything went OK:
-   - Are errors shown in the log
-   - Check variants in Consensus
-   - Check Public Consensus
+   - Are errors shown in the log `vkgl_consensus_release.out`?
+   - Create the markdown Summary with Checklist and check
+   - Check DataSummary.md and add the content to the scrum board release ticket
+   - Check variants in the Consensus table
+   - Check the Public Consensus table
 2. Update the MVL and Consensus version in /Public/settings/#/menu and /RawLabData/settings/#/menu
 3. Update the Consensus version in /VKGL/settings/#/menu
 4. Update the Counts page with data from the /Public/ConsensusCounts table

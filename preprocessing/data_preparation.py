@@ -5,7 +5,7 @@ from typing import List, cast
 
 from utils.configuration import Configuration
 from utils.printer import Printer
-from utils.report import ReleaseError, ReleaseWarning
+from utils.report import ReleaseError, ReleaseReport, ReleaseWarning
 from utils.utils import get_hash
 
 from .data_cleaning import DataCleaner
@@ -22,14 +22,16 @@ class DataPreparer:
         self,
         config: Configuration,
         lab: str,
-        warnings: List[ReleaseWarning],
         processing_feedback: List[dict],
+        report: ReleaseReport,
+        warnings: List[ReleaseWarning],
     ):
         self.config = config
         self.lab = lab
         self.lab_system = config.labs[lab]["labSystem"]
         self.printer = Printer()
         self.processing_feedback = processing_feedback
+        self.report = report
         self.warnings = warnings
         Path(f"{config.cleaned_folder}/{lab}").mkdir(parents=True, exist_ok=True)
         Path(f"{config.processed_folder}/{lab}").mkdir(parents=True, exist_ok=True)
@@ -43,7 +45,11 @@ class DataPreparer:
                     header_transformation.add_header(file)
                 self.add_variant_id(file)
                 DataCleaner(
-                    self.config, self.lab, self.warnings, self.processing_feedback
+                    self.config,
+                    self.lab,
+                    self.processing_feedback,
+                    self.report,
+                    self.warnings,
                 ).clean_data(file)
             files = self._get_files_from_folder(
                 f"{self.config.cleaned_folder}/{self.lab}"
