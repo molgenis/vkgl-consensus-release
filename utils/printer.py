@@ -59,42 +59,46 @@ class Printer:
         self.print("📋 Summary")
         self.print("==========")
 
-        for category in report.categories:
-            if category in report.errors or report.error:
-                message = f"❌ Retrieving {category} data failed"
-                if category in report.warnings:
-                    message += f" with {len(report.warnings[category])} warning(s)"
-            elif category in report.warnings:
+        for lab in report.labs:
+            if lab in report.errors or report.error:
+                message = f"❌ Retrieving {lab} data failed"
+                if lab in report.warnings:
+                    message += f" with {len(report.warnings[lab])} warning(s)"
+            elif lab in report.warnings:
                 message = (
-                    f"⚠️ {category} finished successfully with "
-                    f"{len(report.warnings[category])} warning(s)"
+                    f"⚠️ {lab} finished successfully with "
+                    f"{len(report.warnings[lab])} warning(s)"
                 )
             else:
-                message = f"✅ Retrieving {category} data finished successfully"
+                message = f"✅ Retrieving {lab} data finished successfully"
 
             self.print(message)
 
-    def print_summary(self, report: ReleaseReport):
+    def print_release_summary(self, report: ReleaseReport):
+        self.print_pipeline_summary(report)
+        self.save_data_summary(report)
+
+    def print_pipeline_summary(self, report: ReleaseReport):
         self.reset_indent()
         self.print()
         self.print("==========")
         self.print(f"📋 Summary {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         self.print("==========")
 
-        for category in report.categories:
-            if category in ["consensus", "publishing", "PublicInfo"]:
+        for lab in report.labs:
+            if lab in ["consensus", "publishing", "PublicInfo"]:
                 continue
-            if category in report.errors or report.error:
-                message = f"❌ Processing {category} data failed"
-                if category in report.warnings:
-                    message += f" with {len(report.warnings[category])} warning(s)"
-            elif category in report.warnings:
+            if lab in report.errors or report.error:
+                message = f"❌ Processing {lab} data failed"
+                if lab in report.warnings:
+                    message += f" with {len(report.warnings[lab])} warning(s)"
+            elif lab in report.warnings:
                 message = (
-                    f"⚠️ {category} finished successfully with "
-                    f"{len(report.warnings[category])} warning(s)"
+                    f"⚠️ {lab} finished successfully with "
+                    f"{len(report.warnings[lab])} warning(s)"
                 )
             else:
-                message = f"✅ Processing {category} data finished successfully"
+                message = f"✅ Processing {lab} data finished successfully"
 
             self.print(message)
 
@@ -139,6 +143,21 @@ class Printer:
             message = "✅ Publishing the data finished successfully"
 
         self.print(message)
+
+    @staticmethod
+    def save_data_summary(report: ReleaseReport):
+        with open("DataSummary.md", "w") as file:
+            file.write("**Summary**\n\n")
+            for lab in report.labs:
+                if len(report.summary[lab]) > 0:
+                    file.write(report.summary[lab])
+                    file.write("\n\n")
+                else:
+                    file.write(
+                        f"**{lab}**\n=> No new data included in this " f"release\n\n"
+                    )
+            with open("Checklist.md", "r") as checklist:
+                file.write(checklist.read())
 
     @contextmanager
     def indentation(self):

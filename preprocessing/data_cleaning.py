@@ -5,7 +5,7 @@ from typing import List, cast
 
 from utils.configuration import Configuration
 from utils.printer import Printer
-from utils.report import ReleaseError, ReleaseWarning
+from utils.report import ReleaseError, ReleaseReport, ReleaseWarning
 from utils.utils import extract_date
 
 
@@ -20,14 +20,16 @@ class DataCleaner:
         self,
         config: Configuration,
         lab: str,
-        warnings: List[ReleaseWarning],
         processing_feedback: List[dict],
+        report: ReleaseReport,
+        warnings: List[ReleaseWarning],
     ):
         self.config = config
         self.lab = lab
         self.lab_system = config.labs[lab]["labSystem"]
         self.printer = Printer()
         self.processing_feedback = processing_feedback
+        self.report = report
         self.warnings = warnings
 
     def clean_data(self, file):
@@ -39,10 +41,17 @@ class DataCleaner:
         cleaned_data = list()
         try:
             file_date = extract_date(file).date()
+            latest = False
+            if file_date.strftime("%Y%m") == self.config.release:
+                latest = True
             with open(file, "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f, delimiter="\t")
                 header = cast(list, reader.fieldnames)
                 variants = list(reader)
+                if latest:
+                    self.report.update_summary(
+                        self.config.labs[self.lab]["name"], {"n_latest": len(variants)}
+                    )
 
             variants = self._remove_explicit_missing_values(variants)
             all_data = self._get_rows_as_tuple(variants, header, "labUploadDate")
@@ -50,18 +59,25 @@ class DataCleaner:
             counts = Counter(all_data)
             self.printer.print("🗑️ Remove duplicates", indent=2)
             deduplicated = self._remove_duplicates(all_data)
-            if len(all_data) != len(deduplicated):
-                self._warn(
-                    f"{len(all_data) - len(deduplicated)} duplicate variant(s) found"
+            if (n_dup := len(all_data) - len(deduplicated)) > 0:
+                self._warn(f"{n_dup} duplicate variant(s) found")
+            if latest:
+                self.report.update_summary(
+                    self.config.labs[self.lab]["name"], {"duplicates": n_dup}
                 )
+
             opposites = list()
+            n_opps = 0
             if deduplicated:
                 opposites = self._check_opposites_within_lab(deduplicated)
-                if opposites:
+                if (n_opps := len(opposites)) > 0:
                     self._warn(
-                        f"{len(opposites)} opposite classification(s) within "
-                        f"this lab found"
+                        f"{n_opps} opposite classification(s) within this lab found"
                     )
+            if latest:
+                self.report.update_summary(
+                    self.config.labs[self.lab]["name"], {"opposites": n_opps}
+                )
 
             checked = set()
             cleaned = set()
@@ -125,10 +141,11 @@ class DataCleaner:
             self.printer.print(
                 "👀 Check for variants without a classification", indent=2
             )
-            if len(no_classification) > 0:
-                self._warn(
-                    f"{len(set(no_classification))} variant(s) found without a "
-                    f"classification"
+            if (n_no_class := len(set(no_classification))) > 0:
+                self._warn(f"{n_no_class} variant(s) found without a classification")
+            if latest:
+                self.report.update_summary(
+                    self.config.labs[self.lab]["name"], {"no_class": n_no_class}
                 )
 
         except Exception as e:

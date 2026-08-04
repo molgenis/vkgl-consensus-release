@@ -7,7 +7,7 @@ import pandas as pd
 
 from .configuration import Configuration
 from .printer import Printer
-from .report import ReleaseError, ReleaseWarning
+from .report import ReleaseError, ReleaseReport, ReleaseWarning
 from .utils import get_row_count
 
 
@@ -23,8 +23,9 @@ class Validator:
         self,
         lab: str,
         config: Configuration,
-        warnings: List[ReleaseWarning],
         processing_feedback: List[dict],
+        report: ReleaseReport,
+        warnings: List[ReleaseWarning],
     ):
         self.config = config
         self.file_info = {}
@@ -33,6 +34,7 @@ class Validator:
         self.lab_name = self.config.labs[lab]["name"]
         self.printer = Printer()
         self.processing_feedback = processing_feedback
+        self.report = report
         self.session = self.config.session
         self.validation_failed = False
         self.warnings = warnings
@@ -96,14 +98,15 @@ class Validator:
             if len(df_to_be) != len(df_normalised):
                 self.validation_failed = True
                 missing = df_to_be[~df_to_be["id"].isin(df_normalised["rawLabData"])]
+                message = f"{len(missing)} variant(s) couldn't be normalised"
                 self._warn(
-                    f"{len(missing)} variants are not normalised:"
+                    f"{message}:"
                     f"\n{'\n'.join(f"\t\t- {_id}" for _id in missing['id'].values)}"
                 )
             else:
-                self.printer.print(
-                    "✅ All new / updated variants are normalised", indent=1
-                )
+                message = "All new / updated variants could be normalised"
+                self.printer.print(f"✅ {message}", indent=1)
+            self.report.update_summary(self.lab_name, {"normalised": message})
 
         except FileNotFoundError as e:
             raise ReleaseError(f"{str(e).replace('[Errno 2] ', '')}")

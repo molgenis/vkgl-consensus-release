@@ -4,7 +4,7 @@ from typing import List
 import pandas as pd
 
 from utils.printer import Printer
-from utils.report import ReleaseError, ReleaseWarning
+from utils.report import ReleaseError, ReleaseReport, ReleaseWarning
 from utils.utils import extract_date
 
 
@@ -16,15 +16,19 @@ class FileComparing:
     def __init__(
         self,
         lab: str,
+        lab_name: str,
         input_folder: str,
+        report: ReleaseReport,
         warnings: List[ReleaseWarning],
         output_folder: str = None,
     ):
         self.input_folder = Path(input_folder)
+        self.lab = lab
+        self.lab_name = lab_name
         if output_folder:
             self.output_folder = Path(output_folder)
         self.printer = Printer()
-        self.lab = lab
+        self.report = report
         self.warnings = warnings
 
     def list_and_sort_files(self, desc: bool = False):
@@ -52,23 +56,30 @@ class FileComparing:
         old_file, new_file = files[-2], files[-1]
         old_data = set(self.ingest(old_file).splitlines())
         new_data = set(self.ingest(new_file).splitlines())
-        new_rows = new_data - old_data
-        if not new_rows:
-            self._warn("No new variants available")
+        mutations = new_data - old_data
+        if not mutations:
+            self._warn("No new or updated variants available")
         else:
             self.printer.print(
-                f"🆕 {len(new_rows)} new or updated variants found", indent=1
+                f"🆕 {len(mutations)} new or updated variants found", indent=1
             )
+            self.check_mutations(old_file, new_file, mutations)
 
-            self.save_new_rows(self.ingest(new_file).splitlines()[0], new_rows)
+            self.save_new_rows(self.ingest(new_file).splitlines()[0], mutations)
 
-        self.check4deleted_data(old_file, new_file)
-
-    def check4deleted_data(self, old: Path, new: Path):
-        self.printer.print("🔍 Check for deleted variants", indent=1)
+    def check_mutations(self, old: Path, new: Path, mutations):
         df_old = pd.read_csv(old, dtype=str, delimiter="\t")
         df_new = pd.read_csv(new, dtype=str, delimiter="\t")
 
+        mutated_ids = [variant.split("\t")[0] for variant in list(mutations)]
+
+        df_new_variants = df_new[~df_new["id"].isin(df_old["id"])]
+        self.report.update_summary(self.lab_name, {"new": len(df_new_variants)})
+
+        df_updates = df_old[df_old["id"].isin(mutated_ids)]
+        self.report.update_summary(self.lab_name, {"updated": len(df_updates)})
+
+        self.printer.print("🔍 Check for deleted variants", indent=1)
         df_deletes = df_old[~df_old["id"].isin(df_new["id"])]
 
         if not df_deletes.empty:
@@ -78,6 +89,8 @@ class FileComparing:
             )
         else:
             self.printer.print("📌 No deleted variants found", indent=1)
+
+        self.report.update_summary(self.lab_name, {"deleted": len(df_deletes)})
 
     def save_new_rows(self, header: str, new_rows: set[str]):
         self.output_folder.mkdir(parents=True, exist_ok=True)
