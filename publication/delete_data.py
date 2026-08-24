@@ -27,7 +27,7 @@ class DataRemover:
         ProcessingFeedback table
         """
         lab_name = self.config.labs[lab]["name"]
-        self.printer.print(f"🗑 Delete {lab_name} preprocessing feedback", indent=indent)
+        self.printer.print(f"🗑 Delete {lab_name} processing feedback", indent=indent)
 
         with self.printer.indentation():
             _ids = [variant]

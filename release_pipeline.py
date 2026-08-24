@@ -216,7 +216,7 @@ class ReleasePipeline:
             )
             compare.compare_files()
 
-            VariantRemover(self.config, lab, warnings).remove_variants()
+            VariantRemover(self.config, lab, self.report, warnings).remove_variants()
 
             validator.validate_preprocessing()
 
