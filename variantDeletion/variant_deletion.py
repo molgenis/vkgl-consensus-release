@@ -9,7 +9,7 @@ from preprocessing.file_comparison import FileComparing
 from publication.delete_data import DataRemover
 from utils.configuration import Configuration
 from utils.printer import Printer
-from utils.report import ReleaseError, ReleaseWarning
+from utils.report import ReleaseError, ReleaseReport, ReleaseWarning
 
 from .consensus_maintenance import ConsensusMaintainer
 
@@ -34,6 +34,7 @@ class VariantRemover:
         self,
         config: Configuration,
         lab: str,
+        report: ReleaseReport,
         warnings: List[ReleaseWarning],
     ):
         self.config = config
@@ -44,6 +45,7 @@ class VariantRemover:
         self.lab_name = config.labs[lab]["name"]
         self.lab_system = config.labs[lab]["labSystem"]
         self.printer = Printer()
+        self.report = report
         self.warnings = warnings
         # Get all normalised data from the lab
         self.normalised_lab_data = self.session.get(
@@ -68,7 +70,7 @@ class VariantRemover:
                 variants = list(reader)
 
                 if len(variants) > 250:
-                    raise ReleaseError("More than 100 deleted variants found")
+                    raise ReleaseError("More than 250 deleted variants found")
                 for variant in variants:
                     self.printer.print(
                         "Update the consensus (if relevant) and "
@@ -172,7 +174,11 @@ class VariantRemover:
         raw_lab_ids = df_remaining_dupl["rawLabData"].tolist()
         folder = f"{self.config.cleaned_folder}/{self.lab}"
         file_comparing = FileComparing(
-            lab=self.lab, input_folder=folder, warnings=self.warnings
+            lab=self.lab,
+            lab_name=self.lab_name,
+            input_folder=folder,
+            report=self.report,
+            warnings=self.warnings,
         )
         files = file_comparing.list_and_sort_files(desc=False)
         if not files:

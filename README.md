@@ -108,18 +108,21 @@ For the development of the VKGL data release process, please check [Development]
 ## Post-processing
 1. Check if everything went OK:
    - Are errors shown in the log `vkgl_consensus_release.out`?
-   - Create the markdown Summary with Checklist and check
    - Check DataSummary.md and add the content to the scrum board release ticket
-   - Check variants in the Consensus table
+   - Check processing numbers of Normalised and Consensus data
    - Check the Public Consensus table
 2. Update the MVL and Consensus version in /Public/settings/#/menu and /RawLabData/settings/#/menu
 3. Update the Consensus version in /VKGL/settings/#/menu
 4. Update the Counts page with data from the /Public/ConsensusCounts table
 5. Upload the public consensus GRCh37 and GRCh38 files to the download server.
     How to can be found [here](https://umcgonline.sharepoint.com/:w:/r/sites/GeneticaSysteemgenetica-GCCOPS/_layouts/15/Doc.aspx?sourcedoc=%7BDF849902-8A23-4919-8AA0-7104B5EE5DBE%7D&file=WI%20MOLGENIS%20DM%20-%20Put%20data%20on%20download%20server.docx&action=default&mobileredirect=true&DefaultItemOpen=1)
-6. Update the Downloads page accordingly.
-7. Ask externals for review?
-8. If everything looks fine:
+6. Make sure the files can be downloaded:
+    ```shell
+    chmod o+r VKGL_public_consensus_yyyyMM_GRCh3*.tsv
+    ```
+7. Update the Downloads page accordingly.
+8. Ask externals for review?
+9. If everything looks fine:
    - Update the haproxy server:
        - Change the dns of vkgl-release.molgenis.net to vkgl.molgeniscloud.org
        - Remove (or rename) the vkgl.molgeniscloud.org dns from the current server
@@ -128,7 +131,7 @@ For the development of the VKGL data release process, please check [Development]
       - Adjust the vault location
       - Adjust the description
    - Put the old vkgl.molgeniscloud.org server to recycle
-9. Notify the VKGL group
+10. Notify the VKGL group
 
 ### Persist data on the `Nibbler` cluster prm03 folder
 1. Go to `/groups/umcg-gcc/prm03/projects/VKGL/`
@@ -149,6 +152,7 @@ For the development of the VKGL data release process, please check [Development]
     Radboud/MUMC: source, date
     UMCG: source, date
     UMCU: source, date
+    VariantValidator: version
 
     Scripts:
     ~Link to GitHub location with date~
