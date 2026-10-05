@@ -8,7 +8,7 @@
 #SBATCH --nodes=1
 #SBATCH --open-mode=append
 #SBATCH --export=NONE
-#SBATCH --get-user-env=60L
+#SBATCH --get-user-env
 
 if [[ $1 -eq 0 ]] ; then
     echo "Please enter release yyyyMM"
