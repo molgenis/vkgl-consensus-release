@@ -93,7 +93,7 @@ class DataPreparer:
                             _id = (
                                 f"{row.get(columns['chromosome'], '').strip()}_"
                                 f"{row.get(columns['start'], '').strip()}_"
-                                f"{row.get(columns['stop'], '').strip()}_"
+                                f"{row.get(columns.get('stop', ''), '').strip()}_"
                                 f"{row.get(columns['ref'], '').strip()}_"
                                 f"{row.get(columns['alt'], '').strip()}_"
                                 f"{row.get(columns['variantType'], '').strip()}_"
