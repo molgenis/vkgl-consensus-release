@@ -45,6 +45,10 @@ class Normalisation:
                     row: dict[str, str]  # type hint to prevent warnings
                     # Get genome reference build
                     row["genomeReferenceBuild"] = self.get_reference_build(row)
+                    if row["genomeReferenceBuild"].lower() in ["hg19"]:
+                        row["genomeReferenceBuild"] = "GRCh37"
+                    if row["genomeReferenceBuild"].lower() in ["hg38"]:
+                        row["genomeReferenceBuild"] = "GRCh38"
                     # Prepare URL
                     row["url"], row["url_type"] = VariantValidator(
                         self.warnings
