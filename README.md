@@ -103,7 +103,7 @@ For the development of the VKGL data release process, please check [Development]
     sbatch vkgl-consensus-release.sh yyyyMM
     ```
 8. Save the batchID => see [SLURM.md](Slurm.md) for useful commands
-9. Check regularly `vkgl_conensus_release.out` or use one of the Slurm command if the job is still running
+9. Check regularly `vkgl_consensus_release.out` or use one of the Slurm command if the job is still running
 
 ## Post-processing
 1. Check if everything went OK:
