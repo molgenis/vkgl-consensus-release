@@ -137,9 +137,9 @@ For the development of the VKGL data release process, please check [Development]
 1. Go to `/groups/umcg-gcc/prm03/projects/VKGL/`
 2. To be able to create folders and put data in this folder do: `sudo -u umcg-gcc-dm bash`
 3. Create a new release folder with the name like `yyyyMM`.
-4. Zip all files in tmp02/projects/VKGL/yyyyMM with
+4. Archive and compress all files in tmp02/projects/VKGL/yyyyMM with
     ```shell
-    zip -r VKGL_yyyyMM.zip *
+    sbatch create_backup.sh yyyyMM
     ```
 5. Move the VKGL release run from Nibbler tmp02 to prm03
 6. Create a `versions.txt` in `/groups/umcg-gcc/prm03/projects/VKGL/yyyyMM/` with the following content:

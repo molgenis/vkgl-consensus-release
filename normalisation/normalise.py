@@ -207,6 +207,17 @@ class Normalisation:
                                 f"show for this {normalised_variant['variantType']}"
                             )
                             normalised_variant[column] = ref_alt_message
+                    for column in ["hgvs", "hgvsGRCh38"]:
+                        if (
+                            "delins" in normalised_variant[column]
+                            and len(normalised_variant[column]) > 255
+                        ):
+                            normalised_variant[column] = re.sub(
+                                r"(delins).*",
+                                r"\1SequenceTooLongToShow",
+                                normalised_variant[column],
+                            )
+
                     normalised_variants.append(normalised_variant)
             except Exception as e:
                 raise ReleaseError(f"Something went wrong during normalisation: {e}")
@@ -267,7 +278,7 @@ class Normalisation:
                 or grch37.get("vcf", {}).get("chr", "")
             ),
             "start": grch37.get("vcf", {}).get("pos", ""),
-            "stop": self.get_genomic_stop(grch37.get("hgvs_genomic_description", "")),
+            "stop": self.get_genomic_stop(grch37.get("vcf", {})),
             "ref": grch37.get("vcf", {}).get("ref", ""),
             "alt": grch37.get("vcf", {}).get("alt", ""),
             "gene": response.get("gene_symbol"),
@@ -277,6 +288,7 @@ class Normalisation:
             "hgvs": grch37.get("hgvs_genomic_description", ""),
             "hgvsGRCh38": grch38.get("hgvs_genomic_description", ""),
             "posGRCh38": grch38.get("vcf", {}).get("pos", ""),
+            "stopGRCh38": self.get_genomic_stop(grch38.get("vcf", {})),
             "refGRCh38": grch38.get("vcf", {}).get("ref", ""),
             "altGRCh38": grch38.get("vcf", {}).get("alt", ""),
         }
@@ -288,16 +300,15 @@ class Normalisation:
             return self.config.labs[self.lab]["genomeReferenceBuild"]
 
     @staticmethod
-    def get_genomic_stop(hgvs):
+    def get_genomic_stop(vcf):
         """
-        Determine the genomic stop position from an HGVS genomic notation.
-        Works for SNV, deletion, insertion, and delins.
+        Determine the genomic stop position based on VCF POS + len(REF) - 1
         """
-        m = re.search(r"g\.(\d+)(?:_(\d+))?", hgvs)
-        if not m:
+        if vcf.get("pos", "") and vcf.get("ref", ""):
+            stop = int(vcf.get("pos")) + len(vcf.get("ref")) - 1
+            return stop
+        else:
             return ""
-        stop = int(m.group(2)) if m.group(2) else int(m.group(1))
-        return stop
 
     def _warn(self, message: str):
         warning = ReleaseWarning(message)
