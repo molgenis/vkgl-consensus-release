@@ -68,6 +68,7 @@ class ReleasePipeline:
                             f"Publishing the preprocessed {lab_name} data failed"
                         ),
                     )
+                    self.report.add_error(lab_name, error)
             else:
                 self.report.add_error(
                     "publishing",
@@ -141,7 +142,8 @@ class ReleasePipeline:
 
         else:
             self.report.add_error(
-                "consensus", ReleaseError("Creating the public information won't start")
+                "PublicInfo",
+                ReleaseError("Creating the public information won't start"),
             )
             self.report.add_error(
                 "publishing", ReleaseError("Public consensus info won't be published")
