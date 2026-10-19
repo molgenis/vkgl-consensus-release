@@ -134,8 +134,8 @@ class DataCleaner:
                 if key not in checked:
                     checked_data.append(variant)
                     checked.add(key)
-
-            self._write_checked_data(header, checked_data)
+            if latest:
+                self._write_checked_data(header, checked_data)
             self._write_cleaned_data(header, file_date, cleaned_data)
 
             self.printer.print(

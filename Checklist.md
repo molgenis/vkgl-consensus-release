@@ -7,3 +7,4 @@
 - [ ] Reset the password of the new production server
 - [ ] Update the server list
 - [ ] Notify the VKGL datashare group that a new release is available
+- [ ] Create a ticket for the next release and put it into the right sprint
