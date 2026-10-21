@@ -119,6 +119,7 @@ class Consensus:
                             "hgvs",
                             "hgvsGRCh38",
                             "posGRCh38",
+                            "stopGRCh38",
                             "refGRCh38",
                             "altGRCh38",
                         ],
