@@ -128,6 +128,7 @@ class PublicInformation:
         columns38 = [
             "chromosome",
             "posGRCh38",
+            "stopGRCh38",
             "refGRCh38",
             "altGRCh38",
             "gene",
@@ -141,6 +142,7 @@ class PublicInformation:
         df_public38.rename(
             columns={
                 "posGRCh38": "start",
+                "stopGRCh38": "stop",
                 "refGRCh38": "ref",
                 "altGRCh38": "alt",
                 "hgvsGRCh38": "hgvs",
