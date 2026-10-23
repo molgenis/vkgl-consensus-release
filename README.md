@@ -121,8 +121,11 @@ For the development of the VKGL data release process, please check [Development]
     chmod o+r VKGL_public_consensus_yyyyMM_GRCh3*.tsv
     ```
 7. Update the Downloads page accordingly.
-8. Ask externals for review?
-9. If everything looks fine:
+8. Update the GeneInfo:
+    - Run 1_getUniqueGene.py (available as script on the server)
+    - Run 2_getGeneInfoBatch.py (available as script on the server)
+9. Ask externals for review?
+10. If everything looks fine:
    - Update the haproxy server:
        - Change the dns of vkgl-release.molgenis.net to vkgl.molgeniscloud.org
        - Remove (or rename) the vkgl.molgeniscloud.org dns from the current server
@@ -131,7 +134,7 @@ For the development of the VKGL data release process, please check [Development]
       - Adjust the vault location
       - Adjust the description
    - Put the old vkgl.molgeniscloud.org server to recycle
-10. Notify the VKGL group
+11. Notify the VKGL datashare workgroup
 
 ### Persist data on the `Nibbler` cluster prm03 folder
 1. Go to `/groups/umcg-gcc/prm03/projects/VKGL/`

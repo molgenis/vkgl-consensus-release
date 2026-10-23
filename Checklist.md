@@ -3,6 +3,7 @@
 - [ ] Add new downloads to the download server and update the Downloads page
 - [ ] Update the MVL and Consensus version in /Public/settings/#/menu and /RawLabData/settings/#/menu
 - [ ] Update the Consensus version in /VKGL/settings/#/menu
+- [ ] Run the scripts to update the GeneInfo table
 - [ ] Add OIDC settings to the new server
 - [ ] Change the DNS of the release server to the production server
 - [ ] Activate the OIDC login
