@@ -145,7 +145,7 @@ For the development of the VKGL data release process, please check [Development]
     sbatch create_backup.sh yyyyMM
     ```
 5. Move the VKGL release run from Nibbler tmp02 to prm03
-6. Create a `versions.txt` in `/groups/umcg-gcc/prm03/projects/vkgl/yyyyMM/` with the following content:
+6. Create a `README.txt` in `/groups/umcg-gcc/prm03/projects/vkgl/yyyyMM/` with the following content:
     ```text
     DATA:
     AUMC: source, date
