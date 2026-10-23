@@ -137,15 +137,15 @@ For the development of the VKGL data release process, please check [Development]
 11. Notify the VKGL datashare workgroup
 
 ### Persist data on the `Nibbler` cluster prm03 folder
-1. Go to `/groups/umcg-gcc/prm03/projects/VKGL/`
+1. Go to `/groups/umcg-gcc/prm03/projects/vkgl/`
 2. To be able to create folders and put data in this folder do: `sudo -u umcg-gcc-dm bash`
 3. Create a new release folder with the name like `yyyyMM`.
-4. Archive and compress all files in tmp02/projects/VKGL/yyyyMM with
+4. Archive and compress all files in tmp02/projects/vkgl/yyyyMM with
     ```shell
     sbatch create_backup.sh yyyyMM
     ```
 5. Move the VKGL release run from Nibbler tmp02 to prm03
-6. Create a `versions.txt` in `/groups/umcg-gcc/prm03/projects/VKGL/yyyyMM/` with the following content:
+6. Create a `versions.txt` in `/groups/umcg-gcc/prm03/projects/vkgl/yyyyMM/` with the following content:
     ```text
     DATA:
     AUMC: source, date
